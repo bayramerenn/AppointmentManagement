@@ -1,0 +1,477 @@
+﻿@model CreateAsnViewModel
+
+@{
+    ViewData["Title"] = "CreateAsn";
+    Layout = "~/Views/Vendor/_VendorLayout.cshtml";
+}
+
+@section Styles{
+    @*<link href="~/lib/limonte-sweetalert2/sweetalert2.css" rel="stylesheet" />*@
+    <style>
+        tbody span{
+            width: 100px;
+        }
+        .modal-body tbody{
+            font-size: 1rem !important;
+            font-weight: normal;
+        }
+
+        .modal-dialog.modal-xl {
+            max-width: 1297px;
+        }
+    </style>
+
+}
+
+<div class="card card-custom example example-compact">
+    <div class="card-header">
+        <h3 class="card-title">ASN Fişi Oluştur</h3>
+    </div>
+    <!--begin::Form-->
+    <form class="form" asp-action="CreateAsn" method="post">
+        <div class="card-body">
+            @*<input type="hidden" id="vendorCode" value="@TempData["User"]" />*@
+            <input type="hidden" id="vendorCode" value="@TempData["VendorCode"]" />
+            <div class="form-group row mt-3">
+                <label class="col-lg-1 col-form-label text-right">Depo :</label>
+                <div class="col-lg-5">
+                    <select class="form-control select2" id="kt_select2_1" asp-for="OrderWarehouse.WarehouseCode" asp-items="Model.OrderWarehouses">
+                        <option value="009">Düzeltme Depo</option>
+                    </select>
+                </div>
+
+                <label class="col-lg-1 col-form-label text-right">Araç Tipi :</label>
+                <div class="col-lg-5">
+                    <select class="form-control select2" id="kt_select2_3" asp-for="VehicleTypes.Id" asp-items="Model.Vehicle">
+                        <option value="0">Lütfen araç tipi seçiniz</option>
+                    </select>
+                </div>
+            </div>
+            <div class="separator separator-dashed my-10"></div>
+            <div class="form-group row">
+                <label class="col-lg-1 col-form-label text-right">Kutu Sayısı:</label>
+                <div class="col-lg-5">
+                    <input class="form-control" type="number" value="0" min="0" id="BoxQuantity">
+                </div>
+
+                <label class="col-lg-1 col-form-label text-right">Palet Sayısı:</label>
+                <div class="col-lg-5">
+                    <input class="form-control" type="number" value="0" min="0" id="PalletQuantity">
+                </div>
+            </div>
+            
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-lg-5"></div>
+                <div class="col-lg-7">
+                    <button hidden data-toggle="modal" data-target="#exampleModalSizeXl">Modal - xl</button>
+                    <button type="button" class="btn btn-primary mr-2" id="myModal">Satırlar</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="modal fade" id="exampleModalSizeXl" tabindex="-1" role="dialog" aria-labelledby="exampleModalSizeXl" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Sipariş</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="card card-custom card-shadowless gutter-b mt-5">
+
+                        <div class="card-body pt-0 pb-3">
+                            <div class="tab-content">
+
+                                <div class="table-responsive">
+                                    <table class="table table-head-custom table-head-bg table-borderless table-vertical-center">
+                                        <thead>
+                                            <tr class="text-left text-uppercase">
+                                                <th style="min-width: 120px" class="pl-7">
+                                                    <span class="text-dark-75">Sipariş Num</span>
+                                                </th>
+                                                <th>Depo Adı</th>
+                                                <th>Ürün Kodu</th>
+                                                <th>Ürün Adı</th>
+                                                <th>Renk</th>
+                                                <th>Beden</th>
+                                                <th>Sipariş Miktarı</th>
+                                                <th>Kalan Miktar</th>
+                                                <th>Miktar</th>
+                                                <th hidden>Teslim Tarihi</th>
+                                                <th hidden>ItemTypeCode</th>
+                                                <th hidden>OrderLineID</th>
+                                                <th hidden>OrderDeliveryDate</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tableData">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary font-weight-bold" id="saveAsnLine">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-custom example example-compact mt-5">
+    <div class="card-header">
+        <h3 class="card-title">Onay Bekleyen Fişler</h3>
+    </div>
+    <!--begin::Form-->
+    <!--begin::Notice-->
+    <!--end::Notice-->
+    <!--begin::Card-->
+    <div class="card card-custom gutter-b">
+        <div class="card-body">
+
+            <div class="datatable datatable-bordered datatable-head-custom" id="kt_datatable"></div>
+            <!--end: Datatable-->
+        </div>
+    </div>
+    <!--end::Card-->
+    <!--begin::Modal-->
+    <div id="kt_datatable_modal" class="modal fade" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content" style="min-height: 590px;">
+                <div class="modal-header py-5">
+                    <h5 class="modal-title">
+                        Sub Datatable in Modal Pop-up
+                        <span class="d-block text-muted font-size-sm">sub datatable for the selected row is loaded from remote data source</span>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="datatable datatable-bordered datatable-head-custom" id="kt_datatable_sub"></div>
+                    <!--end: Datatable-->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary font-weight-bold text-uppercase" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary font-weight-bold text-uppercase">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+
+    <script src="~/assets/js/pages/features/miscellaneous/sweetalert2.js"></script>
+    <!--end::Demo Panel-->
+   
+  
+    <script src="~/assets/js/pages/crud/forms/widgets/select2.js"></script>
+    <script src="~/lib/UserJsFolder/request.js"></script>
+    <script src="~/lib/UserJsFolder/VendorController/ui.js"></script>
+    @*<script src="~/lib/limonte-sweetalert2/sweetalert2.js"></script>*@
+
+    
+    <script src="~/assets/js/pages/crud/ktdatatable/advanced/modal.js"></script>
+
+    <script src="~/lib/UserJsFolder/VendorController/app.js"></script>
+
+    <script>
+        // Class definition
+        var KTSelect2 = function () {
+            // Private functions
+            var demos = function () {
+                // basic
+                $('#kt_select2_1').select2({
+                    placeholder: "Lütfen bir değer seçiniz"
+                });
+                $('#kt_select2_2').select2({
+                    placeholder: "Lütfen bir değer seçiniz"
+                });
+                $('#kt_select2_3').select2({
+                    placeholder: "Lütfen bir değer seçiniz"
+                });
+            }
+
+            // Public functions
+            return {
+                init: function () {
+                    demos();
+                }
+            };
+        }();
+
+        // Initialization
+        jQuery(document).ready(function () {
+            KTSelect2.init();
+        });
+    </script>
+
+    <script>
+
+        var jsonData = @Html.Raw(JsonSerializer.Serialize(Model.OrderAsn,
+                     new JsonSerializerOptions() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+       
+
+        var KTDatatableModal = function () {
+
+            var initDatatable = function () {
+                var el = $('#kt_datatable');
+
+                var datatable = el.KTDatatable({
+                    // datasource definition
+                    data: {
+                        type: 'local',
+                        source: jsonData,
+
+                        pageSize: 10, // display 20 records per page
+                        serverPaging: true,
+                        serverFiltering: false,
+                        serverSorting: true,
+                    },
+
+                    // layout definition
+                    layout: {
+                        theme: 'default',
+                        scroll: false,
+                        height: null,
+                        footer: false,
+                    },
+
+                    // column sorting
+                    sortable: true,
+
+                    pagination: true,
+
+                    search: {
+                        input: el.find('#kt_datatable_search_query'),
+                        key: 'generalSearch'
+                    },
+
+                    // columns definition
+                    columns: [
+                     //{
+                     //   field: 'OrderAsnHeaderID',
+                     //   title:'OrderAsnHeaderID'
+                     //},
+                    {
+                        field: 'OrderAsnNumber',
+                        title: 'Asn Numarası',
+                        width: 100,
+                          template: function (row) {
+                              return '<a href="Vendor/UpdateAsn/' + row.OrderAsnHeaderID + '">' + row.OrderAsnNumber +'</a>';
+                        },
+                    },{
+                        field: 'WarehouseDescription',
+                        title: 'Depo Adı',
+                        width: 160
+                    },{
+                        field: 'ContainerTypeDescription',
+                        title: 'Araç Tipi',
+                         width: 100
+                    },{
+                        field: 'TotalPackage',
+                        title: 'Kutu',
+                        width: 70
+                    },{
+                        field: 'TotalCHW',
+                        title: 'Palet',
+                        width: 70
+                    },{
+                        field: 'OrderAsnDate',
+                        title: 'Oluşturma Tarihi',
+                            template: function (row) {
+                            return moment(row.OrderAsnDate).format('DD-MM-YYYY');
+                        },
+
+                    },{
+                        field: 'IsConfirmed',
+                        title: 'Onay',
+                        template: function(row) {
+                            var status = {
+                                'true' : {
+                                    'title': 'Onaylandı',
+                                    'class': 'label-light-primary'
+                                },
+                                'false': {
+                                    'title': 'Bekleniyor',
+                                    'class': 'label-light-danger'
+                                }
+
+                            };
+                            return '<span class="label label-lg font-weight-bold ' + status[row.IsConfirmed].class + ' label-inline">' + status[row.IsConfirmed].title + '</span>';
+                            },
+                    }, {
+                        field: 'Actions',
+                        width: 200,
+                        title: 'Actions',
+                        sortable: false,
+                        overflow: 'visible',
+                        textAlign: 'left',
+                        autoHide: false,
+                        template: function(row) {
+                            return '\
+		                          <button name="orderId" id="' + row.OrderAsnHeaderID + '" class="btn btn-sm btn-clean"><i class="fa fa-trash" aria-hidden="true" id="' + row.OrderAsnHeaderID + '"></i></button>  \
+		                              <button data-record-id="' + row.OrderAsnHeaderID + '" class="btn btn-sm btn-clean" title="View records">\
+		                                  <i class="far fa-clone"></i> Details\
+		                              </button>';
+                        },
+                    }],
+                });
+
+
+                var card = datatable.closest('.card');
+
+                $('#kt_datatable_search_status').on('change', function () {
+                    datatable.search($(this).val().toLowerCase(), 'Status');
+                });
+
+                $('#kt_datatable_search_type').on('change', function () {
+                    datatable.search($(this).val().toLowerCase(), 'Type');
+                });
+
+                $('#kt_datatable_search_status, #kt_datatable_search_type').selectpicker();
+
+                datatable.on('click', '[data-record-id]', function (el) {
+                    initSubDatatable($(this).data('record-id'));
+                    $('#kt_datatable_modal').modal('show');
+                    console.log(el)
+                });
+
+             
+            };
+
+            var initSubDatatable = function (id) {
+              
+                var el = $('#kt_datatable_sub');
+                var datatable = el.KTDatatable({
+                    data: {
+                        type: 'remote',
+                        source: "/Vendor/GetOrderAsnLine?id="+id,
+                        //{
+                        //    read: {
+                        //        url: HOST_URL + '/api/datatables/demos/orders.php',
+                        //        params: {
+                        //            query: {
+                        //                generalSearch: '',
+                        //                CustomerID: id,
+                        //            },
+                        //        },
+                        //    },
+                        //},
+                        pageSize: 10,
+                        serverPaging: true,
+                        serverFiltering: false,
+                        serverSorting: true,
+                    },
+
+                    // layout definition
+                    layout: {
+                        theme: 'default',
+                        scroll: true,
+                        height: 350,
+                        footer: false,
+                    },
+
+                    search: {
+                        input: el.find('#kt_datatable_search_query_2'),
+                        key: 'generalSearch'
+                    },
+
+                    sortable: true,
+
+                    // columns definition
+                    columns: [{
+                            field: 'itemCode',
+                            title: 'Ürün Kodu',
+                            //width : 100
+                    },{
+                        field: 'itemDescription',
+                            title: 'Ürün Adı',
+                            width: 250
+                       
+
+
+                    },{
+                        field: 'colorCode',
+                        title: 'Renk',
+                        width : 70
+                    },{
+                        field: 'itemDim1Code',
+                        title: 'Beden',
+                        width : 70
+                    },{
+                        field: 'qty1',
+                        title: 'Miktar',
+                        type: 'number'
+
+                    },
+                    ],
+
+                });
+
+
+
+                var modal = datatable.closest('.modal');
+
+                $('#kt_datatable_search_status_2').on('change', function () {
+                    datatable.search($(this).val().toLowerCase(), 'Status');
+                });
+
+                $('#kt_datatable_search_type_2').on('change', function () {
+                    datatable.search($(this).val().toLowerCase(), 'Type');
+                });
+
+                $('#kt_datatable_search_status_2, #kt_datatable_search_type_2').selectpicker();
+
+                // fix datatable layout after modal shown
+                datatable.hide();
+                modal.on('shown.bs.modal', function () {
+                    var modalContent = $(this).find('.modal-content');
+                    datatable.spinnerCallback(true, modalContent);
+                    datatable.spinnerCallback(false, modalContent);
+                }).on('hidden.bs.modal', function () {
+                    el.KTDatatable('destroy');
+                });
+
+                datatable.on('datatable-on-layout-updated', function () {
+                    datatable.show();
+                    datatable.redraw();
+                });
+            };
+
+            return {
+                // public functions
+                init: function () {
+                    initDatatable();
+                }
+            };
+        }();
+
+        jQuery(document).ready(function () {
+            KTDatatableModal.init();
+            
+        });
+
+       
+
+      
+
+        //document.querySelectorAll(".card-body")[2].addEventListener("click", item)
+
+ 
+
+     
+
+
+    </script>
+
+}

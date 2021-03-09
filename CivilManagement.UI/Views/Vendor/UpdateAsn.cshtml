@@ -1,0 +1,471 @@
+﻿@model UpdateAsnViewModel
+
+@{
+    ViewData["Title"] = "UpdateAsn";
+    Layout = "~/Views/Vendor/_VendorLayout.cshtml";
+}
+
+@section Styles{
+    <link href="~/lib/limonte-sweetalert2/sweetalert2.css" rel="stylesheet" />
+    <style>
+        tbody th {
+            font-size: 1rem;
+            font-weight: normal;
+        }
+    </style>
+}
+
+<div class="card card-custom card-shadowless gutter-b mt-5">
+    <div class="card-header">
+        <h3 class="card-title">Fiş Bilgilerini Güncelle</h3>
+    </div>
+    <!--begin::Form-->
+
+
+    <form class="form" asp-action="UpdateAsn" method="post">
+        <input hidden id="vendorCode" value="@TempData["VendorCode"]" />
+        <input hidden id="orderAsnHeaderId" value="@Model.OrderAsnHeaderId" />
+
+        <div class="card-body pt-0 pb-3 mt-5">
+            <div class="form-group row mt-3">
+
+                <label class="col-lg-1 col-form-label text-right">Depo :</label>
+                <div class="col-lg-2">
+                    <select class="form-control select2" disabled="disabled" id="kt_select2_1" asp-for="OrderWarehouse.WarehouseCode" asp-items="Model.OrderWarehouses">
+                        <option value="0">Lütfen araç tipi seçiniz</option>
+                    </select>
+                </div>
+
+                <label class="col-lg-1 col-form-label text-right">Araç Tipi :</label>
+                <div class="col-lg-2">
+                    <select class="form-control select2" id="kt_select2_3" asp-for="VehicleTypes.Id" asp-items="Model.Vehicle">
+                        <option value="0">Lütfen araç tipi seçiniz</option>
+                    </select>
+                </div>
+
+                <label class="col-lg-1 col-form-label text-right">Kutu Sayısı:</label>
+                <div class="col-lg-2">
+                    <input class="form-control" asp-for="TotalPackage" min="0">
+                </div>
+
+                <label class="col-lg-1 col-form-label text-right">Palet Sayısı:</label>
+                <div class="col-lg-2">
+                    <input class="form-control" asp-for="TotalCHW" min="0">
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-lg-5"></div>
+                <div class="col-lg-7">
+                    <button type="button" id="headerUpdate" class="btn btn-primary mr-2" data-container="body" data-toggle="tooltip" data-placement="bottom" title="Sadece yukarıdaki bilgileri günceller">
+                        Başlık Bilgilerini Güncelle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="card card-custom card-shadowless gutter-b mt-5">
+    <div class="card-header">
+        <h3 class="card-title">Satırları Güncelle</h3>
+    </div>
+    <div class="card-body pt-0 pb-3 mt-5">
+        <!--begin::Form-->
+        <div class="tab-content">
+
+            <div class="table-responsive">
+
+                <table class="table table-head-custom table-head-bg table-borderless table-vertical-center">
+                    <thead>
+                        <tr class="text-left text-uppercase">
+                            <th style="width:216px;">Sipariş Num</th>
+                            <th style="width:224px;">Ürün Kodu</th>
+                            <th style="width:600px;">Ürün Adı</th>
+                            <th style="width:109px;">Renk</th>
+                            <th style="width:125px;">Beden</th>
+                            <th style="width:260px;">Sipariş Miktarı</th>
+                            <th style="width:236px;">Kalan Miktar</th>
+                            <th style="width:409px;">Asn Miktar</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="update">
+                        @foreach (var item in Model.OrderAsnLine)
+                        {
+                            <tr>
+
+                                <th>@item.OrderNumber</th>
+                                <th>@item.ItemCode</th>
+                                <th>@item.ItemDescription</th>
+                                <th>@item.ColorCode</th>
+                                <th>@item.ItemDim1Code</th>
+                                <th>@item.Qty1</th>
+                                <th>@item.RemainingOrderQty1</th>
+                                <th>
+                                    <input class="form-control" value="@item.OrderAsnQty1" data-type="update" min="0" id="@item.OrderAsnLineID" type="number" />
+                                </th>
+                                <td>
+                                    <a id="@item.OrderAsnLineID" name="delete" class="btn btn-icon btn-danger btn-sm">
+                                        <i class="fas fa-trash-alt" id="@item.OrderAsnLineID"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-custom card-shadowless gutter-b mt-5">
+    <div class="card-header">
+        <h3 class="card-title">Siparişten Ürün Ekle</h3>
+    </div>
+    <div class="card-body pt-0 pb-3 mt-5">
+        <!--begin::Form-->
+        <div class="tab-content">
+
+            <div class="table-responsive">
+
+                <table class="table table-head-custom table-head-bg table-borderless table-vertical-center">
+                    <thead>
+                        <tr class="text-left text-uppercase">
+                            <th style="width:216px;">Sipariş Num</th>
+                            <th style="width:224px;">Ürün Kodu</th>
+                            <th style="width:600px;">Ürün Adı</th>
+                            <th style="width:109px;">Renk</th>
+                            <th style="width:125px;">Beden</th>
+                            <th style="width:260px;">Sipariş Miktarı</th>
+                            <th style="width:236px;">Kalan Miktar</th>
+                            <th style="width:409px;">Asn Miktar</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="insert">
+                        @foreach (var item in Model.VendorOrderLine)
+                        {
+                        <tr>
+
+                            <th>@item.OrderNumber</th>
+                            <th>@item.ItemCode</th>
+                            <th>@item.ItemDescription</th>
+                            <th>@item.ColorCode</th>
+                            <th>@item.ItemDim1Code</th>
+                            <th>@item.Qty1</th>
+                            <th>@item.RemainingOrderQty1</th>
+
+                            <th>
+                                <input class="form-control" value="0" data-type="insert" min="0" type="number" />
+                            </th>
+                            <th hidden>@item.ItemTypeCode</th>
+                            <th hidden>@item.DeliveryDate.ToString("yyyy-MM-dd")</th>
+                            <td>
+                                <a id="@item.OrderLineID" name="insert" class="btn btn-icon btn-success btn-sm">
+                                    <i class="fas fa-plus" id="@item.OrderLineID"></i>
+                                </a>
+                            </td>
+
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+
+    <!--end::Demo Panel-->
+    @*<script>var HOST_URL = "https://keenthemes.com/metronic/tools/preview";</script>*@
+    <!--begin::Global Config(global config for global JS scripts)-->
+    <script src="~/assets/js/pages/crud/forms/widgets/select2.js"></script>
+    <script src="~/lib/limonte-sweetalert2/sweetalert2.js"></script>
+    <script src="~/lib/UserJsFolder/VendorController/ui.js"></script>
+    <script src="~/lib/UserJsFolder/request.js"></script>
+
+    <script src="~/assets/js/pages/features/miscellaneous/toastr.js"></script>
+
+    <script>
+
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+
+        const input = document.querySelectorAll('[data-type="update"]');
+        const aDelete = document.querySelectorAll('[name="delete"]');
+        const aInsert = document.querySelectorAll('[name="insert"]');
+        const tbodyUpdate = Array.from(document.querySelectorAll("#update"));
+        const tbodyInsert = Array.from(document.querySelectorAll("#insert"));
+        const headerUpdate = document.querySelector("#headerUpdate");
+        const orderAsnHeaderId = document.getElementById("orderAsnHeaderId").value;
+
+        const vehicles = Array.from(document.querySelectorAll("#kt_select2_3>option"))
+
+        const ui = new UI();
+        const request = new Request();
+       
+
+        
+        toastr.options = {
+            "closeButton": false,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": false,
+            "positionClass": "toast-bottom-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "linear",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "hide"
+        };
+        
+
+
+        headerUpdate.addEventListener("click", function () {
+            let selectedVehicle = document.getElementById("select2-kt_select2_3-container").textContent;
+            let boxQuantity = parseInt(document.getElementById('TotalPackage').value)
+            let palletQuantity = parseInt(document.getElementById('TotalCHW').value)
+
+
+            let filterVehicle = vehicles.filter((item) => selectedVehicle === item.textContent)
+                .map((item) => {
+                    return item.value
+
+                });
+
+            data = {
+                ContainetTypeCode : filterVehicle[0],
+                TotalPackage : boxQuantity,
+                TotalCHW: palletQuantity,
+                OrderAsnHeaderId: orderAsnHeaderId
+            }
+
+            console.log(data)
+
+            request.put("Vendor/UpdateAsnHeader", data)
+                .then(response => {
+                    if (response ==='200') {
+                        Swal.fire({
+                            icon: 'success',
+                            //title: '',
+                            html: "Başlık bilgileri güncellenmiştir!",
+                        })
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            html: "Başlık bilgileri güncellenmedi!",
+                        })
+                    }
+
+                });
+            
+
+        })
+
+
+        aInsert.forEach(item => {
+
+            item.addEventListener("click", function (e) {
+
+                if (e.target.className === "fas fa-plus") {
+
+                    tbodyInsert.filter(insertEl => {
+                        const tr = Array.from(insertEl.children);
+
+                        
+
+                        tr.forEach(el => {
+
+
+                            if (el.lastElementChild.firstElementChild.id === e.target.id) {
+                                let qty = parseInt(el.children[7].firstElementChild.value);
+                                if (qty > 0) {
+                                    data = {
+                                        OrderAsnHeaderId: orderAsnHeaderId,
+                                        ItemCode: el.children[1].textContent,
+                                        ColorCode: el.children[3].textContent,
+                                        ItemDim1Code: el.children[4].textContent,
+                                        ItemTypeCode: el.children[8].textContent,
+                                        Qty1: qty,
+                                        OrderLineID: e.target.id,
+                                        DeliveryDate: moment(el.children[9].textContent).format()
+                                    }
+                                   
+                                   
+
+
+
+                                    request.post('Vendor/AddOrderAsnLine', data)
+                                        .then(response => {
+                                            console.log("if")
+                                            window.location.reload(true)
+                                         
+                                        }).catch(() => {
+                                            ui.alert("Ekleme sırasında bir hata oluştu!", "error");
+                                        })
+                               
+                                }
+                                else {
+                                    ui.alert("Lütfen eklemek istediğiniz ürünün miktarını giriniz", "error");
+                                }
+                              
+                            }
+                           
+                        });
+                    });
+                }
+                else {
+                    tbodyInsert.filter(insertEl => {
+                        const tr = Array.from(insertEl.children);
+
+                        tr.forEach(el => {
+
+
+                            if (el.lastElementChild.firstElementChild.id === e.target.id) {
+                                let qty = parseInt(el.children[7].firstElementChild.value);
+                                if (qty > 0) {
+                                    data = {
+                                        OrderAsnHeaderId: orderAsnHeaderId,
+                                        ItemCode: el.children[1].textContent,
+                                        ColorCode: el.children[3].textContent,
+                                        ItemDim1Code: el.children[4].textContent,
+                                        ItemTypeCode: el.children[8].textContent,
+                                        Qty1: qty,
+                                        OrderLineID: e.target.id,
+                                        DeliveryDate: moment(el.children[9].textContent).format()
+                                    }
+
+
+
+
+
+                                    request.post('Vendor/AddOrderAsnLine', data)
+                                        .then(response => {
+                                            console.log("if")
+                                            window.location.reload(true)
+
+                                        }).catch(() => {
+                                            ui.alert("Ekleme sırasında bir hata oluştu!", "error");
+                                        })
+
+                                }
+                                else {
+                                    ui.alert("Lütfen eklemek istediğiniz ürünün miktarını giriniz", "error");
+                                }
+
+                            }
+
+                        });
+                    });
+                }
+
+            });
+        });
+
+
+
+        aDelete.forEach(item => {
+
+            item.addEventListener("click", function (e) {
+
+                if (e.target.className === "fas fa-trash-alt") {
+
+                    tbodyUpdate.filter(item => {
+                        console.log(item.childElementCount)
+
+                        if (item.childElementCount === 1) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                html: "Son satırı silemezsiniz.Fişi tamamen silmek için <strong>Asn Oluştur</strong> sayfasına giderek silme işlemini yapabilirsiniz!",
+                            })
+                            return;
+                        }
+
+                        const tr = Array.from(item.children);
+
+                        tr.forEach(el => {
+
+                            if (el.lastElementChild.firstElementChild.id === e.target.id) {
+                                console.log(el.lastElementChild.firstElementChild.id)
+                                el.remove();
+                                request.delete("Vendor/DeleteOrderAsnLine?orderAsnLineId=" + e.target.id)
+                                    .then(response => {
+                                        if (response.status == '200') {
+                                            window.location.reload(true);
+                                        } else {
+                                            ui.errorAlert("Silmeye çalışırken bir hata oluştu!", "error");
+                                        }
+                                    })
+                            }
+
+                        })
+
+                    })
+
+                } else {
+                    tbodyUpdate.filter(item => {
+                        console.log(item.childElementCount)
+
+                        if (item.childElementCount === 1) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                html: "Son satırı silemezsiniz.Fişi tamamen silmek için <strong>Asn Oluştur</strong> sayfasına giderek silme işlemini yapabilirsiniz!",
+                            })
+                            return;
+                        }
+
+                        const tr = Array.from(item.children);
+
+                        tr.forEach(el => {
+
+                            if (el.lastElementChild.firstElementChild.id === e.target.id) {
+                                console.log(el.lastElementChild.firstElementChild.id)
+                                el.remove();
+                                request.delete("Vendor/DeleteOrderAsnLine?orderAsnLineId=" + e.target.id)
+                                    .then(response => {
+                                        if (response.status == '200') {
+                                            window.location.reload(true);
+                                        } else {
+                                            ui.errorAlert("Silmeye çalışırken bir hata oluştu!", "error");
+                                        }
+                                    })
+                            }
+
+                        })
+
+                    })
+                }
+
+            })
+        })
+
+        input.forEach(item => {
+            item.addEventListener('change', function (e) {
+
+                if (e.target.value == 0) {
+                    ui.errorAlert("0 değeri girilemez.Silme işlemi yapabilirsiniz!", "error");
+                    //console.log(item.value)
+                    e.target.value = item.getAttribute('value');
+                }
+                else {
+
+                    request.get("Vendor/UpdateOrderAsnLine?id=" + item.getAttribute('id') + "&qty=" + e.target.value);
+                }
+            });
+        })
+
+    </script>
+
+}

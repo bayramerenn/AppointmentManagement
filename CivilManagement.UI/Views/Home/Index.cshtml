@@ -1,0 +1,787 @@
+﻿@model SecretaryViewModel
+
+@section Styles{
+    <style>
+        .bootstrap-select .dropdown-menu.inner > li.dropdown-header {
+            color: black;
+            font-weight: bold;
+            font-size: 12px;
+        }
+    </style>
+}
+
+<div class="modal fade" id="saveModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Randevu Ekleme/Güncelleme</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i aria-hidden="true" class="ki ki-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <input hidden id="appointmentId" />
+                    <input hidden id="inputUserId" value="@Model.UserId" />
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label class="form-control-label">Başlangıç Tarihi</label>
+                            <div class="input-group date mb-2">
+                                <input type="text" class="form-control" placeholder="Başlangıç Tarihi" id="inputStartDate" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text">
+                                        <i class="la la-check-circle-o glyphicon-th"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="form-control-label">Bitiş Tarihi</label>
+                            <div class="input-group date mb-2">
+                                <input type="text" class="form-control" placeholder="Bitiş Tarihi" id="inputEndDate" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text">
+                                        <i class="la la-check-circle-o glyphicon-th"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @*selectpicker*@
+                    <div class="row">
+                        <div class="form-group col-md-12">
+                            <label class="form-control-label">Asn Numarası</label>
+                            <select id="selectOrderNumber" class="form-control selectpicker" data-live-search="true">
+                                <option value="0">Lütfen Fiş Numarasını Seçiniz</option>
+                                @if (Model.ArticulatedLorry != null)
+                                {
+                                    <optgroup label="Tır" select-items="@Model.ArticulatedLorry"></optgroup>
+                                }
+
+                                @if (Model.Truck != null)
+                                {
+                                    <optgroup label="Kamyon" select-items="@Model.Truck"></optgroup>
+                                }
+
+                                @if (Model.Van != null)
+                                {
+                                    <optgroup label="Kamyonet" select-items="@Model.Van"></optgroup>
+                                }
+                                @if (Model.DeliveryVan != null)
+                                {
+                                    <optgroup label="Panelvan" select-items="@Model.DeliveryVan"></optgroup>
+                                }
+                                @if (Model.Car != null)
+                                {
+                                    <optgroup label="Otomobil" select-items="@Model.Car"></optgroup>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label class="form-control-label">Toplam Koli Miktarı</label>
+                            <div class="input-group date mb-2">
+                                <input disabled type="number" class="form-control" id="inputBox" />
+                            </div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="form-control-label">Toplam Palet Miktarı</label>
+                            <div class="input-group date mb-2">
+                                <input disabled type="number" class="form-control" id="inputPallet" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+
+                        <div class="form-group col-md-12">
+                            <label class="form-control-label">Açıklama</label>
+                            <textarea class="form-control" rows="3" id="inputDescription"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+                <button id="btnSave" type="button" class="btn btn-primary font-weight-bold">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Randevu Detayları</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i aria-hidden="true" class="ki ki-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    @*<input hidden id="appointmentId" />
+                        <input hidden id="inputUserId" value="@Model.UserId" />*@
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label class="form-control-label">Başlangıç Tarihi</label>
+                            <div class="input-group date mb-2">
+                                <input disabled type="text" class="form-control" placeholder="Başlangıç Tarihi" id="inputStartDateDetail" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text">
+                                        <i class="la la-check-circle-o glyphicon-th"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="form-control-label">Bitiş Tarihi</label>
+                            <div class="input-group date mb-2">
+                                <input disabled type="text" class="form-control" placeholder="Bitiş Tarihi" id="inputEndDateDetail" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text">
+                                        <i class="la la-check-circle-o glyphicon-th"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-12">
+                            <label class="form-control-label">Asn Numarası</label>
+                            <select disabled id="selectOrderNumberDetail" class="form-control">
+                                <option value="0">Lütfen Fiş Numarasını Seçiniz</option>
+                                @if (Model.ArticulatedLorry != null)
+                                {
+                                    <optgroup label="Tır" select-items="@Model.ArticulatedLorry"></optgroup>
+                                }
+
+                                @if (Model.Truck != null)
+                                {
+                                    <optgroup label="Kamyon" select-items="@Model.Truck"></optgroup>
+                                }
+
+                                @if (Model.Van != null)
+                                {
+                                    <optgroup label="Kamyonet" select-items="@Model.Van"></optgroup>
+                                }
+                                @if (Model.DeliveryVan != null)
+                                {
+                                    <optgroup label="Panelvan" select-items="@Model.DeliveryVan"></optgroup>
+                                }
+                                @if (Model.Car != null)
+                                {
+                                    <optgroup label="Otomobil" select-items="@Model.Car"></optgroup>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label class="form-control-label">Toplam Koli Miktarı</label>
+                            <div class="input-group date mb-2">
+                                <input disabled type="number" class="form-control" id="inputBoxDetail" />
+                            </div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="form-control-label">Toplam Palet Miktarı</label>
+                            <div class="input-group date mb-2">
+                                <input disabled type="number" class="form-control" id="inputPalletDetail" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+
+                        <div class="form-group col-md-12">
+                            <label class="form-control-label">Açıklama</label>
+                            <textarea disabled class="form-control" rows="3" id="inputDescriptionDetail"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="btnDelete" type="button" class="btn btn-light-danger font-weight-bold">Sil</button>
+                <button id="btnUpdate" type="button" class="btn btn-primary font-weight-bold">Güncelle</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-3">
+        <!--begin::Card-->
+        <div class="card card-custom card-stretch">
+            <div class="card-header">
+                <div class="card-title">
+                    <h3 class="card-label">Etkinlikler</h3>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="kt_calendar_external_events" class="fc-unthemed">
+                    @foreach (var vehicle in Model.VehicleTypes)
+                    {
+                        <div id="listVehicle" class="btn btn-block text-left font-weight-bold btn-light-@vehicle.Color fc-draggable-handle mb-5 cursor-move"
+                             data-color="fc-event-@vehicle.Color" data-value="@vehicle.Id">@vehicle.VehicleDesc</div>
+                        }
+
+                    <div class="separator separator-dashed my-10"></div>
+
+                    <div class="card card-custom bg-light-success card-shadowless gutter-b">
+                        <!--begin::Body-->
+                        <div class="card-body my-3">
+                            <a href="#" class="card-title font-weight-bolder text-success text-hover-state-dark font-size-h6 mb-4 d-block">
+                                Tekstil Mal Kabul Oranı
+                            </a>
+                            <div class="font-weight-bold text-muted font-size-sm">
+                                <span class="text-dark-75 font-size-h2 font-weight-bolder mr-2">67%</span>Average
+                            </div>
+                            <div class="progress progress-xs mt-7 bg-success-o-60">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 67%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <!--end:: Body-->
+                    </div>
+
+                    <div class="card card-custom bg-light-warning card-shadowless gutter-b">
+                        <!--begin::Body-->
+                        <div class="card-body my-4">
+                            <a href="#" class="card-title font-weight-bolder text-warning font-size-h6 mb-4 text-hover-state-dark d-block">
+                                Kutulu Mal Kabul Oranı
+                            </a>
+                            <div class="font-weight-bold text-muted font-size-sm">
+                                <span class="text-dark-75 font-weight-bolder font-size-h2 mr-2">87K%</span>23k to goal
+                            </div>
+                            <div class="progress progress-xs mt-7 bg-warning-o-60">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: 87%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <!--end::Body-->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--end::Card-->
+    </div>
+    <div class="col-lg-9">
+        <!--begin::Card-->
+        <div class="card card-custom card-stretch">
+            <div class="card-header">
+                <div class="card-title">
+                    <h3 class="card-label">Takvim</h3>
+                </div>
+           
+            </div>
+            <div class="card-body">
+                <div id="kt_calendar"></div>
+            </div>
+        </div>
+        <!--end::Card-->
+    </div>
+</div>
+
+@section Scripts{
+    <script src="~/node_modules/moment/min/moment.min.js"></script>
+    <script src="~/node_modules/moment-timezone/builds/moment-timezone-with-data-10-year-range.js"></script>
+    <script src="assets/plugins/custom/fullcalendar/fullcalendar.bundle.js"></script>
+    <script src="~/lib/UserJsFolder/request.js"></script>
+
+    <script src="~/lib/UserJsFolder/jquery.easing.1.3.js"></script>
+    <script src="~/lib/UserJsFolder/toast.js"></script>
+
+    <script src="~/lib/UserJsFolder/VendorController/ui.js"></script>
+    @*<script src="~/assets/js/pages/crud/forms/widgets/bootstrap-datetimepicker.js"></script>*@
+
+    <script>
+        const selectElement = document.getElementById("selectOrderNumber");
+        const inputBox = document.getElementById("inputBox");
+        const inputPallet = document.getElementById("inputPallet");
+
+        $('#inputStartDate,#inputEndDate').datetimepicker({
+            todayHighlight: true,
+            autoclose: true,
+            pickerPosition: 'bottom-left',
+            format: 'dd/mm/yyyy hh:ii',
+            weekStart: 1
+        });
+
+        addEventListeners();
+
+        function addEventListeners() {
+            selectElement.addEventListener("change", getSelectElement)
+        }
+
+        function getSelectElement(e) {
+
+            let box = e.target.options[e.target.selectedIndex].getAttribute("data-box");
+            let pallet = e.target.options[e.target.selectedIndex].getAttribute("data-pallet");
+
+            inputBox.value = box;
+            inputPallet.value = pallet
+
+        }
+        //parseInt(selectEl.options[selectEl.selectedIndex].getAttribute("data-vehicle")),
+    </script>
+
+    <script>
+
+        const request = new Request();
+        const toast = new Toast();
+
+        var KTCalendarExternalEvents = function () {
+
+            var initExternalEvents = function () {
+                $('#kt_calendar_external_events .fc-draggable-handle').each(function () {
+                    // store data so the calendar knows to render an event upon drop
+                    $(this).data('event', {
+                        title: $.trim($(this).text()), // use the element's text as the event title
+                        stick: true, // maintain when user navigates (see docs on the renderEvent method)
+                        classNames: [$(this).data('color')],
+                        description: 'Lorem ipsum dolor eius mod tempor labore'
+                    });
+                });
+            }
+
+            var initCalendar = function () {
+                var todayDate = moment().startOf('day');
+                var YM = todayDate.format('YYYY-MM');
+                var YESTERDAY = todayDate.clone().subtract(1, 'day').format('YYYY-MM-DD');
+                var TODAY = todayDate.format();
+                var TODAYDEF = moment().format();
+                var TOMORROW = todayDate.clone().add(1, 'day').format('YYYY-MM-DD');
+
+                var calendarEl = document.getElementById('kt_calendar');
+                var containerEl = document.getElementById('kt_calendar_external_events');
+
+                var Draggable = FullCalendarInteraction.Draggable;
+
+                new Draggable(containerEl, {
+                    itemSelector: '.fc-draggable-handle',
+                    eventData: function (eventEl) {
+                        return $(eventEl).data('event');
+                    }
+                });
+
+                events = [];
+
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    plugins: ['interaction', 'dayGrid', 'timeGrid', 'list'],
+                    timezone: 'Europe/Istanbul',
+                    isRTL: KTUtil.isRTL(),
+                    locale: 'tr',
+
+                    header: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+
+                    },
+
+                    footer: {
+                        left: 'prevYear',
+                        right: 'nextYear'
+                    },
+                    minTime: '08:00:00',
+                    maxTime: '17:00:00',
+
+                    snapDuration: '00:15:00',
+                    slotLabelFormat: {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    },
+                    columnHeaderFormat: {
+                        weekday: 'long'
+                    },
+
+                    fixedWeekCount: true,
+                    height: 800,
+                    contentHeight: 780,
+                    aspectRatio: 1.2,  // see: https://fullcalendar.io/docs/aspectRatio
+
+                    nowIndicator: true,
+                    //now: TODAY + 'T12:00:00', // just for demo
+
+                    views: {
+                        dayGridMonth: { buttonText: 'month' },
+                        timeGridWeek: { buttonText: 'week' },
+                        timeGridDay: { buttonText: 'day' }
+                    },
+
+                    //defaultView: 'dayGridWeek',
+                    defaultView: 'timeGridWeek',
+                    defaultDate: TODAY,
+
+                    hiddenDays: [0],
+                    allDaySlot: false,
+                    droppable: true, // this allows things to be dropped onto the calendar
+                    editable: true, //Event üzerinde güncelleme yaptırır
+                    eventLimit: true, // allow "more" link when too many events
+                    navLinks: true,
+
+                    selectable: true,
+
+                    select: function (selectionInfo) {
+
+                        selectedEvent = {
+                            id: 0,
+                            start: moment(selectionInfo.start).format('DD/MM/YYYY HH:mm'),
+                            end: moment(selectionInfo.end).format('DD/MM/YYYY HH:mm'),
+                            selectOrderNumber: "",
+                            description: ""
+                        }
+                        openAddOrUpdateModal(true);
+                    },
+
+                    eventClick: function (info) {
+
+                        selectedEvent = {
+                            id: info.event.id,
+                            start: moment(info.event.start).format('DD/MM/YYYY HH:mm'),
+                            end: moment(info.event.end).format('DD/MM/YYYY HH:mm'),
+                            selectOrderNumber: info.event.extendedProps.orderAsnHeaderId,
+                            description: info.event.extendedProps.description
+                        }
+
+                        let selectEl = document.getElementById("selectOrderNumber");
+
+                        $('#selectOrderNumberDetail').val(info.event.extendedProps.orderAsnHeaderId)
+                        $('#inputStartDateDetail').val(moment(info.event.start).format('DD/MM/YYYY HH:mm'))
+                        $('#inputEndDateDetail').val(moment(info.event.end).format('DD/MM/YYYY HH:mm'))
+                        $('#inputDescriptionDetail').val(info.event.extendedProps.description)
+
+                        optLength = selectEl.options.length
+
+                        for (var i = 1; i < optLength; i++) {
+                            if (selectEl.options[i].value === info.event.extendedProps.orderAsnHeaderId) {
+                                $('#inputBoxDetail').val(selectEl.options[i].getAttribute("data-box"))
+                                $('#inputPalletDetail').val(selectEl.options[i].getAttribute("data-pallet"))
+                            }
+
+                        }
+
+                        $('#detailModal').modal();
+                    },
+
+                    eventRender: function (info) {
+
+                        info.el.firstElementChild.innerHTML += '<div class="fc-description mt-0">' + info.event.extendedProps.vendorDescription + '</div>';
+
+                        info.el.firstElementChild.innerHTML += '<div class="fc-description mt-0">' + info.event.extendedProps.orderAsnNumber + '</div>';
+
+                        //if (info.event.extendedProps && info.event.extendedProps.description) {
+                        //    if (element.hasClass('fc-time-grid-event')) {
+                        //        element.data('content', info.event.extendedProps.orderAsnNumber + '\n' + info.event.extendedProps.vendorDescription);
+                        //        element.data('placement', 'top');
+                        //        KTApp.initPopover(element);
+                        //    } if (element.hasClass('fc-day-grid-event')) {
+                        //        element.data('content', info.event.extendedProps.orderAsnNumber + "\n" + info.event.extendedProps.vendorDescription);
+                        //        element.data('placement', 'top');
+                        //        KTApp.initPopover(element);
+                        //    }
+                        //}
+
+                    },
+
+
+                    eventDrop: function (dropEventInfo) {
+
+                        console.log(moment(dropEventInfo.event.start).format());
+       
+
+                        const getDate = moment(dropEventInfo.event.start).format();
+
+
+                        if (TODAYDEF > getDate) {
+                            toast.getToast('error', "Geçmiş bir tarihe randevu giremezsiniz eventDrop!")
+                        }
+                        else {
+                            let appointment = {
+
+                                id: parseInt(dropEventInfo.event.id),
+                                userId: dropEventInfo.event.userId,
+                                startDate: moment(dropEventInfo.event.start).format('DD/MM/YYYY HH:mm'),
+                                endDate: moment(dropEventInfo.event.end).format('DD/MM/YYYY HH:mm'),
+                                description: dropEventInfo.event.extendedProps.description,
+                                vehicleTypeId: parseInt(dropEventInfo.event.extendedProps.vehicleTypeId),
+                                vendorCode: dropEventInfo.event.extendedProps.vendorCode,
+                                orderAsnHeaderId: dropEventInfo.event.extendedProps.orderAsnHeaderId,
+                                userId: dropEventInfo.event.extendedProps.userId
+                            }
+
+                            saveAppointment(appointment)
+                        }
+
+                    },
+
+                    eventResize: function (dropEventInfo) {
+
+
+                        let appointment = {
+
+                            id: parseInt(dropEventInfo.event.id),
+                            userId: dropEventInfo.event.userId,
+                            startDate: moment(dropEventInfo.event.start).format('DD/MM/YYYY HH:mm'),
+                            endDate: moment(dropEventInfo.event.end).format('DD/MM/YYYY HH:mm'),
+                            description: dropEventInfo.event.extendedProps.description,
+                            vehicleTypeId: parseInt(dropEventInfo.event.extendedProps.vehicleTypeId),
+                            vendorCode: dropEventInfo.event.extendedProps.vendorCode,
+                            orderAsnHeaderId: dropEventInfo.event.extendedProps.orderAsnHeaderId,
+                            userId: dropEventInfo.event.extendedProps.userId
+                        }
+
+                        saveAppointment(appointment)
+                        //if (TODAYDEF > moment(dropEventInfo.event.start).format('DD/MM/YYYY HH:mm')) {
+                        //    toast.getToast('error', "Geçmiş bir tarihe randevu giremezsiniz!")
+                        //}
+                        //else {
+                        //    let appointment = {
+
+                        //        id: parseInt(dropEventInfo.event.id),
+                        //        userId: dropEventInfo.event.userId,
+                        //        startDate: moment(dropEventInfo.event.start).format('DD/MM/YYYY HH:mm'),
+                        //        endDate: moment(dropEventInfo.event.end).format('DD/MM/YYYY HH:mm'),
+                        //        description: dropEventInfo.event.extendedProps.description,
+                        //        vehicleTypeId: parseInt(dropEventInfo.event.extendedProps.vehicleTypeId),
+                        //        vendorCode: dropEventInfo.event.extendedProps.vendorCode,
+                        //        orderAsnHeaderId: dropEventInfo.event.extendedProps.orderAsnHeaderId,
+                        //        userId: dropEventInfo.event.extendedProps.userId
+                        //    }
+
+                        //    saveAppointment(appointment)
+                        //}
+
+                    },
+
+                });
+
+                calendar.render();
+                getAppointments();
+
+                function getAppointmentsByVehicle(vehicleTypeId) {
+
+                    request.get("Appointment/GetAppointmentsByVehicle?vehicleTypeId=" + vehicleTypeId)
+
+                        .then(response => {
+
+                            events = [];
+
+                            let sources = calendar.getEventSources();
+
+                            sources.forEach(item => {
+                                item.remove();
+                            })
+
+                            response.map((item) => {
+                                events.push({
+                                    id: item.id,
+                                    title: item.vehicleDesc,
+                                    start: item.startDate,
+                                    end: item.endDate,
+                                    className: "fc-event-danger fc-event-solid-" + item.color,
+                                    vendorDescription: item.vendorDescription,
+                                    orderAsnNumber: item.orderAsnNumber,
+                                    description: item.description,
+                                    orderAsnHeaderId: item.orderAsnHeaderId,
+                                    vehicleTypeId: item.vehicleTypeId,
+                                    userId: item.userId,
+                                    vendorCode: item.vendorCode
+
+                                })
+                            })
+
+                            calendar.addEventSource(events);
+                        }).catch(err => console.log(err))
+                }
+
+                function getAppointments() {
+
+                    request.get("Appointment/GetAppointments")
+
+                        .then(response => {
+
+                            events = [];
+
+                            let sources = calendar.getEventSources();
+
+                            sources.forEach(item => {
+                                item.remove();
+                            })
+
+                            response.map((item) => {
+                                events.push({
+                                    id: item.id,
+                                    title: item.vehicleDesc,
+                                    start: item.startDate,
+                                    end: item.endDate,
+                                    className: "fc-event-danger fc-event-solid-" + item.color,
+                                    vendorDescription: item.vendorDescription,
+                                    orderAsnNumber: item.orderAsnNumber,
+                                    description: item.description,
+                                    orderAsnHeaderId: item.orderAsnHeaderId,
+                                    vehicleTypeId: item.vehicleTypeId,
+                                    userId: item.userId,
+                                    vendorCode: item.vendorCode
+
+                                })
+                            })
+
+                            calendar.addEventSource(events);
+                        }).catch(err => console.log(err))
+                }
+
+                function openAddOrUpdateModal(reflesh) {
+
+                    if (selectedEvent != null) {
+
+                        if (reflesh) {
+                            $("#appointmentId").val(selectedEvent.id);
+                            $('#inputStartDate').val(selectedEvent.start);
+                            $('#inputEndDate').val(selectedEvent.end);
+                            $('#selectOrderNumber').val(selectedEvent.selectOrderNumber);
+                            $('#inputDescription').val(selectedEvent.description);
+
+                        }
+                        else {
+                            $("#appointmentId").val(selectedEvent.id);
+                            $('#inputStartDate').val(selectedEvent.start);
+                            $('#inputEndDate').val(selectedEvent.end);
+                            $('#selectOrderNumber').val(selectedEvent.selectOrderNumber);
+                            $('#selectOrderNumber').selectpicker('refresh')
+                            $('#inputDescription').val(selectedEvent.description);
+
+                            let box = $("#selectOrderNumber option:selected").attr("data-box");
+                            let pallet = $("#selectOrderNumber option:selected").attr("data-pallet");
+
+                            $('#inputBox').val(box);
+                            $('#inputPallet').val(pallet);
+                        }
+
+                    }
+
+                    $('#saveModal').modal();
+
+                }
+
+                function saveAppointment(appointment) {
+
+                    request.post("Appointment/AddOrUpdateAppointment", appointment)
+                        .then(response => {
+                            if (response === "200") {
+
+                                $('#saveModal').modal("hide");
+                                appointment.id === 0
+                                    ? toast.getToast('success', "Randevu başarılı bir şekilde oluşturulmuştur!")
+                                    : toast.getToast('success', "Randevu başarılı bir şekilde güncellenmiştir!")
+
+                                getAppointments();
+                            } else {
+                                $('#saveModal').modal("hide");
+                                toast.getToast('error', "Ekleme işleminde hata oluştu!")
+                            }
+                        })
+                        .catch(err => {
+                            $('#saveModal').modal("hide");
+                            toast.getToast('error', "Ekleme işleminde hata oluştu!")
+                        })
+                }
+
+                $('#btnSave').click(function () {
+
+                    let selectEl = document.getElementById("selectOrderNumber");
+
+                    let ids = $('#appointmentId').val();
+                     
+
+
+                    let appointment = {
+                        id: ids == "" ? 0 : parseInt(ids),
+                        userId: $('#inputUserId').val(),
+                        vehicleTypeId: parseInt(selectEl.options[selectEl.selectedIndex].getAttribute("data-vehicle")),
+                        vendorCode: selectEl.options[selectEl.selectedIndex].getAttribute("data-vendor"),
+                        startDate: $('#inputStartDate').val(),
+                        endDate: $('#inputEndDate').val(),
+                        orderAsnHeaderId: selectEl.options[selectEl.selectedIndex].value,
+                        description: $('#inputDescription').val()
+                    }
+
+                    const getDate = moment(appointment.startDate).format();
+                    selectEl.remove(selectEl.selectedIndex);
+                    $('#selectOrderNumber').selectpicker('refresh');
+                    if (Number.isNaN(appointment.vehicleTypeId)) {
+                        toast.getToast('error', "Lütfen fiş numarasını seçiniz!")
+                    } else if (TODAYDEF > getDate) {
+                        toast.getToast('error', "Geçmiş bir tarihe randevu giremezsiniz!")
+                    }
+                    else {
+                        saveAppointment(appointment)
+
+                    }
+
+                });
+
+                $('#btnUpdate').click(function () {
+                    $('#detailModal').modal('hide');
+                    openAddOrUpdateModal(false);
+                })
+
+                $('#saveModal').on('hidden.bs.modal', function (e) {
+
+                    const box = document.getElementById("inputBox");
+                    const pallet = document.getElementById("inputPallet");
+                    const selectedDesc = document.querySelector('[class="filter-option-inner-inner"]')
+
+                    box.value = "";
+                    pallet.value = "";
+                    selectedDesc.textContent = "Lütfen Fiş Numarasını Seçiniz";
+                })
+
+                $('#btnDelete').click(function () {
+                    console.log(selectedEvent.id);
+
+                    const ui = new UI();
+
+                    ui.deleteQuestion()
+                        .then(anwwer => {
+                            if (anwwer) {
+                                request.delete("Appointment/DeleteAppointment", selectedEvent.id)
+                                    .then(() => {
+                                        var event = calendar.getEventById(selectedEvent.id)
+                                        event.remove();
+                                        $('#detailModal').modal("hide");
+                                        toast.getToast('success', "Silme işlemi gerçekleşmiştir!")
+                                        setTimeout(function () {
+                                            window.location.reload(true);
+                                        }, 3000);
+                                    })
+                                    .catch(() => toast.getToast('error', "Silme işleminde bir hata oluştu!"))
+                            }
+                        });
+
+                })
+
+                $('[id=listVehicle]').click(function () {
+                    $('[id=listVehicle]').removeClass("active");
+                    $(this).addClass('active');
+                    getAppointmentsByVehicle($(this).data('value'))
+
+
+                })
+
+
+
+            }
+
+            return {
+                //main function to initiate the module
+                init: function () {
+                    initExternalEvents();
+                    initCalendar();
+                }
+            };
+        }();
+
+        jQuery(document).ready(function () {
+            KTCalendarExternalEvents.init();
+        });
+    </script>
+}

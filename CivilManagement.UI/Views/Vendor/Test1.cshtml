@@ -1,0 +1,68 @@
+﻿
+@{
+    ViewData["Title"] = "Test1";
+    Layout = "~/Views/Vendor/_VendorLayout.cshtml";
+}
+
+
+<div class="container-fluid">
+    <!--begin::Notice-->
+    <!--end::Notice-->
+    <!--begin::Card-->
+    <div class="card card-custom gutter-b">
+        <div class="card-header flex-wrap border-0 pt-6 pb-0">
+            <div class="card-title">
+                <h3 class="card-label">
+                    Onaylanmayı Bekleyenler
+                </h3>
+            </div>
+           
+        </div>
+        <div class="card-body">
+            
+            <div class="datatable datatable-bordered datatable-head-custom" id="kt_datatable"></div>
+            <!--end: Datatable-->
+        </div>
+    </div>
+    <!--end::Card-->
+    <!--begin::Modal-->
+    <div id="kt_datatable_modal" class="modal fade" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content" style="min-height: 590px;">
+                <div class="modal-header py-5">
+                    <h5 class="modal-title">
+                        Sub Datatable in Modal Pop-up
+                        <span class="d-block text-muted font-size-sm">sub datatable for the selected row is loaded from remote data source</span>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                   
+                    <div class="datatable datatable-bordered datatable-head-custom" id="kt_datatable_sub"></div>
+                    <!--end: Datatable-->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary font-weight-bold text-uppercase" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary font-weight-bold text-uppercase">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+ 
+</div>
+
+
+<!--end::Demo Panel-->
+<script>var HOST_URL = "https://keenthemes.com/metronic/tools/preview";</script>
+<!--begin::Global Config(global config for global JS scripts)-->
+
+
+@section Scripts{
+    <script src="~/assets/js/pages/crud/ktdatatable/advanced/modal.js"></script>
+}
+
+
+
+
